@@ -10,7 +10,7 @@ class Wrapper extends React.Component {
         super(props);
            this.state = {
            server:"http://localhost:8000/",
-           //pics: ['img/photos/1.jpg','img/photos/2.jpg','img/photos/3.jpg','img/photos/4.jpg' ]
+         
            sliderData:[]
          };
         this._ismounted=false;

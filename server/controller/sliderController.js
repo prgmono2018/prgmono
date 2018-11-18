@@ -1,5 +1,11 @@
 const SliderDatas = require('../models/SliderModel');
 const mongoose = require('mongoose');
+var redis = require('redis');
+var client = redis.createClient(); // this creates a new client
+client.on('connect', function() {
+  console.log('Redis client connected');
+});
+
 //var winston = require('.../config/winston');
 mongoose.Promise = global.Promise;
 
@@ -8,17 +14,53 @@ mongoose.Promise = global.Promise;
 //Simple version, without validation or sanitation
 exports.getSliderData = function (req, res) {
  // winston.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    //const query = (req.query.query).trim();
     console.log(">>>getSliderData")
-    SliderDatas.find({}, function(err, sData) {
-     // winston.debug(sData)
-    if (err) {
-        console.log("error="+sData);
-  } else{
-        console.log(sData);
-        res.send(sData);
-  }
+/*    client.exists('key', function(err, reply) {
+      if (reply === 1) {
+          console.log('exists');
+      } else {
+          console.log('doesn\'t exist');
+      }
+  });*/
+
+
+  client.get("yyy", (err, result) => {
+    // If that key exist in Redis store
+    if (result) {
+      console.log("yyy="+result);
+      const resultJSON = JSON.parse(result);
+      return res.send(resultJSON);
+    } else { // Key does not exist in Redis store
+      // Fetch directly from Wikipedia API
+
+      SliderDatas.find({}, function(err, sData) {
+        // winston.debug(sData)
+       if (err) {
+           console.log("error="+sData);
+     } else{
+           console.log(" bo client"+sData);
+           // Save the Wikipedia API response in Redis store
+           console.debug("set");
+           client.set("yyy", JSON.stringify(sData));
+           console.debug("after s");
+           res.send(sData);
+     }
+     });
+     
+    }
   });
 
+
+
+
+
+
+
+
+
+
+  
 
 };
 
